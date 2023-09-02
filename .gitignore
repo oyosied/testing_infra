@@ -1,2 +1,3 @@
 /test/automation_logs/
 /config.json
+*/__pycache__/*
