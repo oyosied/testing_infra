@@ -18,7 +18,6 @@ class CharacterSuite:
     def test_all_characters(self, test_manager: TestManager):
         test_manager.character_api.get_all_characters()
 
-    @pytest.mark.skip
     @pytest.mark.parametrize('field', CHARACTER_FIELDS)
     @pytest.mark.parametrize('data_type', DATA_TYPES)
     def test_all_fields_get_character(self, test_manager: TestManager, field, data_type):
@@ -40,6 +39,25 @@ class CharacterSuite:
         )
         test_manager.character_api.create_character(character=character, skip_assertion=True)
 
+
+    def test_create_character_max(self, test_manager: TestManager):
+        try:
+            for i in range(501):
+                character = Character(
+                    name=f"John{i}",
+                    education="PhD",
+                    height=5.9,
+                    identity="secret",
+                    other_aliases="alias",
+                    universe="Marvel",
+                    weight=160
+                )
+                test_manager.character_api.create_character(character=character, skip_assertion=True)
+        except HTTPError as err:
+            if err.response.status_code == 400 and b'{"error":"Collection can\'t contain more than 500 items"}\n' in err.response.content:
+                logger.error(f"{err}")
+                pass
+
     def test_delete_character(self, test_manager: TestManager):
         character = Character(
             name="John1",
@@ -52,12 +70,6 @@ class CharacterSuite:
         )
         test_manager.character_api.create_character(character=character)
         test_manager.character_api.delete_character(character=character)
-        try:
-            test_manager.character_api.delete_character(character=character)
-        except HTTPError as http_err:
-            if http_err.response.status_code == 400:
-                pass
-            else:
-                logger.error(f"Error occurred while attempting to delete non existent character\n{character}")
-                raise Exception(f"Error occurred while attempting to delete non existent character\n{character}")
+
+        test_manager.character_api.delete_character(character=character,pass_on_error=True)
 

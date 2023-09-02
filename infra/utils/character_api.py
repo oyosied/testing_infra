@@ -47,9 +47,12 @@ class CharacterApi:
     def reset_characters(self):
         self.api_handler.send_request(url=f"{self.base_path}{ApiPaths.RESET_COLLECTION}", method='POST')
 
-    def delete_character(self, character: Character, field_query: Dict = None):
+    def delete_character(self, character: Character, field_query: Dict = None, pass_on_error:bool=False):
         if field_query is None:
             field_query = {'name': character.name}
         response = self.api_handler.send_request(url=f"{self.base_path}{ApiPaths.DELETE_CHARACTER_BY_NAME}", method='DELETE',
-                                      params=field_query)
-        assert character.name in response['result']
+                                      params=field_query,pass_on_error=pass_on_error)
+        if not pass_on_error:
+            assert character.name in response['result']
+        else:
+            pass

@@ -3,7 +3,7 @@ from json import JSONDecodeError
 from typing import Dict
 
 import requests
-from requests import HTTPError
+from requests import HTTPError, Response
 from requests.auth import HTTPBasicAuth
 from loguru import logger
 
@@ -20,7 +20,7 @@ class ApiHandler:
         self.password = password
 
     @staticmethod
-    def handle_response(response):
+    def handle_response(response: Response,pass_on_error):
         data = ''
         try:
             response.raise_for_status()
@@ -33,14 +33,18 @@ class ApiHandler:
         except HTTPError as http_err:
             logger.error(f"HTTP Error occurred: {http_err}")
             logger.error(f"Error Response: {response.content.decode('utf-8')}")
+            if pass_on_error:
+                return data
             raise
         except Exception as err:
             logger.error(f"An error occurred: {err}")
+            if pass_on_error:
+                return data
             raise
         logger.info(f"Response:\n{data}")
         return data
 
-    def send_request(self, url, method='GET', data: Dict=None, params=None):
+    def send_request(self, url, method='GET', data: Dict=None, params=None, pass_on_error: bool=False) -> Dict:
         methods = {
             'GET': requests.get,
             'POST': requests.post,
@@ -61,6 +65,6 @@ class ApiHandler:
             json=data,
             params=params
         )
-        return self.handle_response(response)
+        return self.handle_response(response=response,pass_on_error=pass_on_error)
 
 
