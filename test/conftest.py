@@ -16,3 +16,5 @@ def pytest_sessionstart(session):
 def test_manager(request):
     test_manager: TestManager = TestManager()
     yield test_manager
+    test_manager.character_api.reset_characters()
+
