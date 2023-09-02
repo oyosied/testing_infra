@@ -1,5 +1,6 @@
+import pytest
 
-
+from infra.managers.test_manager import TestManager
 from infra.utils.logs_handler import LoggingSettings
 
 # fetching desired log level
@@ -10,3 +11,8 @@ def pytest_sessionstart(session):
     log_level = session.config.getoption("--log_level").upper()
     logs_settings = LoggingSettings(log_level=log_level,log_path='automation_logs/')
     logs_settings.configure_logs()
+
+@pytest.fixture(scope="session", autouse=True)
+def test_manager(request):
+    test_manager: TestManager = TestManager()
+    yield test_manager
